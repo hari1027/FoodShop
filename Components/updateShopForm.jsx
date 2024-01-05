@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Formik } from 'formik';
 import RNPickerSelect from 'react-native-picker-select';
-import Modal from 'react-native-modal';
 import MultiSelectPicker from './modalComponent';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'react-native-axios';

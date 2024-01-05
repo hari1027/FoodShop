@@ -2,7 +2,6 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import React from 'react'
 import { Formik } from 'formik';
 import { getAllShops } from '../webEventHandlers';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'react-native-axios';
 import Snackbar from 'react-native-snackbar';
 import * as yup from 'yup';

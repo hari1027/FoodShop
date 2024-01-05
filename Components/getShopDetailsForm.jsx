@@ -1,7 +1,6 @@
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useState } from 'react'
 import { Formik } from 'formik';
-import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'react-native-axios';
 import Snackbar from 'react-native-snackbar';
 import * as yup from 'yup';
@@ -49,7 +48,7 @@ const GetShopDetailsForm = (props) => {
                 <View style={styles.mainDiv}>
                     <View style={[styles.headingDiv, { alignItems: 'center', display: 'flex', justifyContent: 'center' }]}>
                         <Text style={[styles.text, { paddingTop: 5, paddingBottom: 5 }]}>
-                            whooo I Have Updated My Shop 👌🙌😊
+                            whooo gonna Update My Shop 👌🙌😊
                         </Text>
                     </View>
                     {!shopDetailsFetched &&
@@ -85,7 +84,7 @@ const GetShopDetailsForm = (props) => {
                         </>
                     }
                     {shopDetailsFetched &&
-                        <UpdateShopForm shopDetails={shopDetails} onClickBack={() => setShopDetailsFetched(false)} setShopsList={(data: any) => props.setShopsList(data)} onClickBackToHome={() => props.onClickBack()} />
+                        <UpdateShopForm shopDetails={shopDetails} onClickBack={() => setShopDetailsFetched(false)} setShopsList={(data) => props.setShopsList(data)} onClickBackToHome={() => props.onClickBack()} />
                     }
                 </View>
             )}

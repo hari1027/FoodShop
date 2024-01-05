@@ -1,5 +1,3 @@
-import React, { useState } from 'react';
-import RNPickerSelect from 'react-native-picker-select';
 import Modal from 'react-native-modal';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';

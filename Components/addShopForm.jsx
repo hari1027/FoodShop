@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Formik } from 'formik';
 import RNPickerSelect from 'react-native-picker-select';
-import Modal from 'react-native-modal';
 import MultiSelectPicker from './modalComponent';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'react-native-axios';
@@ -56,27 +55,6 @@ const AddShopForm = (props) => {
     const toggleModal = () => {
         setModalVisible(!modalVisible);
     };
-
-    const renderCheckBox = (itemValue, isSelected) => (
-        <TouchableOpacity
-            key={itemValue.value}
-            onPress={() => {
-                const selectedValues = values.foodCuisines || [];
-                const updatedValues = isSelected
-                    ? selectedValues.filter((value) => value !== itemValue.value)
-                    : [...selectedValues, itemValue.value];
-                handleSelect(updatedValues);
-            }}
-            style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}
-        >
-            <Icon
-                name={isSelected ? 'check-box' : 'check-box-outline-blank'}
-                size={24}
-                color={isSelected ? 'green' : '#aaa'}
-            />
-            <Text style={{ marginLeft: 10 }}>{itemValue.label}</Text>
-        </TouchableOpacity>
-    );
 
     const CustomDropdownIcon = () => {
         return <Icon name="caret-down" size={15} color="#494F55" style={{ marginRight: 18 }} />;
