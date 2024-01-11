@@ -122,7 +122,7 @@ const UpdateShopForm = props => {
       .min(2, 'Shop Address must be at least 2 characters')
       .max(500, 'Shop Address cannot exceed 500 characters')
       .matches(
-        /^[a-zA-Z0-9\s,\/]+$/,
+        /^[a-zA-Z0-9\s,\.:/-]+$/,
         'Shop Address should only contain letters, numbers and forward slash and comma',
       )
       .required('Shop Address is required'),
@@ -265,7 +265,9 @@ const UpdateShopForm = props => {
                       onPress={() => {
                         toggleModal();
                       }}>
-                      {values.foodCuisines.length > 2
+                      {values.foodCuisines.length === 1
+                        ? values.foodCuisines[0]
+                        : values.foodCuisines.length > 2
                         ? `${values.foodCuisines[0]} ${
                             values.foodCuisines[1]
                           } ..+${values.foodCuisines.length - 2}`

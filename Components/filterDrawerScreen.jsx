@@ -14,7 +14,12 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {useNavigation} from '@react-navigation/native';
 import axios from 'react-native-axios';
 import Snackbar from 'react-native-snackbar';
-import {setFilteredList, setIsFilteredListEmpty} from '../mainReducers';
+import {
+  setFilterItems,
+  setFilteredList,
+  setIsClickedClearAll,
+  setIsFilteredListEmpty,
+} from '../mainReducers';
 import {useDispatch} from 'react-redux';
 
 const FilterDrawerScreen = () => {
@@ -32,7 +37,21 @@ const FilterDrawerScreen = () => {
         if (response.data.length === 0) {
           dispatch(setIsFilteredListEmpty(true));
         }
+        let filterItems = 0;
+        if (values.shopName !== '') {
+          filterItems = filterItems + 1;
+        }
+        if (values.shopAddress !== '') {
+          filterItems = filterItems + 1;
+        }
+        if (values.shopCategory !== '') {
+          filterItems = filterItems + 1;
+        }
+        if (values.foodCuisines.length > 0) {
+          filterItems = filterItems + 1;
+        }
         dispatch(setFilteredList(response.data));
+        dispatch(setFilterItems(filterItems));
         console.log('Shops Has Been Filtered Successfully');
         navigation.navigate('Main');
         Snackbar.show({
@@ -74,7 +93,7 @@ const FilterDrawerScreen = () => {
       .min(2, 'Shop Address must be at least 2 characters')
       .max(500, 'Shop Address cannot exceed 500 characters')
       .matches(
-        /^[a-zA-Z0-9\s,\/]+$/,
+        /^[a-zA-Z0-9\s,\.:/-]+$/,
         'Shop Location will have only contain letters, numbers and forward slash and comma',
       ),
     shopCategory: yup.string(),
@@ -98,6 +117,15 @@ const FilterDrawerScreen = () => {
         style={{marginRight: 18}}
       />
     );
+  };
+
+  const clickedClearAll = setFieldValue => {
+    setFieldValue('shopName', '');
+    setFieldValue('shopAddress', '');
+    setFieldValue('shopCategory', null);
+    setFieldValue('foodCuisines', []);
+    dispatch(setIsClickedClearAll(true));
+    dispatch(setFilterItems(0));
   };
 
   return (
@@ -160,7 +188,9 @@ const FilterDrawerScreen = () => {
               <Text style={styles.fieldNamesText}>Filter By Category :</Text>
               <View style={styles.textBox}>
                 <RNPickerSelect
-                  onValueChange={handleChange('shopCategory')}
+                  onValueChange={value =>
+                    setFieldValue('shopCategory', value || '')
+                  }
                   onBlur={handleBlur('shopCategory')}
                   value={values.shopCategory}
                   placeholder={{label: 'Select ShopCategory', value: null}}
@@ -223,7 +253,9 @@ const FilterDrawerScreen = () => {
                       onPress={() => {
                         toggleModal();
                       }}>
-                      {values.foodCuisines.length > 2
+                      {values.foodCuisines.length === 1
+                        ? values.foodCuisines[0]
+                        : values.foodCuisines.length > 2
                         ? `${values.foodCuisines[0]} ${
                             values.foodCuisines[1]
                           } ..+${values.foodCuisines.length - 2}`
@@ -248,7 +280,14 @@ const FilterDrawerScreen = () => {
               <TouchableOpacity
                 onPress={() => navigation.navigate('Main')}
                 style={styles.button}>
-                <Text style={styles.buttonText}>close</Text>
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  clickedClearAll(setFieldValue);
+                }}
+                style={styles.button}>
+                <Text style={styles.buttonText}>Clear All </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSubmit}

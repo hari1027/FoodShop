@@ -47,6 +47,7 @@ const MultiSelectPicker = props => {
               {label: 'Bakeries', value: 'Bakeries'},
               {label: 'Chats', value: 'Chats'},
               {label: 'JunkFoods', value: 'JunkFoods'},
+              {label: 'Tea / Coffee ', value: 'Tea / Coffee'},
               {label: 'Korean', value: 'Korean'},
               {label: 'Japanese', value: 'Japanese'},
               {label: 'Italian', value: 'Italian'},
