@@ -16,24 +16,3 @@ export const getAllShops = async () => {
     });
   }
 };
-
-export const getShopRatingAndFeedback = async shopId => {
-  console.log(shopId);
-  try {
-    const response = await axios.get(
-      `http://10.0.2.2:5000/FoodShop/getShopRatingAndFeedback/${shopId}`,
-    );
-    if (response.status === 200) {
-      console.log(
-        `Rating and Feedback of shop with Id:${shopId} have been fetched Successfully `,
-      );
-      return response;
-    }
-  } catch (error) {
-    console.log(`${error}`);
-    Snackbar.show({
-      text: `Rating and Feedback of shop with Id:${shopId} have not  been fetched Successfully `,
-      duration: Snackbar.LENGTH_LONG,
-    });
-  }
-};

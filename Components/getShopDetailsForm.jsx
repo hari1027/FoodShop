@@ -35,7 +35,6 @@ const GetShopDetailsForm = props => {
   };
 
   const handleSubmit = values => {
-    console.log('Form values:', values);
     getShopDetails(values.shopId);
   };
 
@@ -106,7 +105,7 @@ const GetShopDetailsForm = props => {
             <UpdateShopForm
               shopDetails={shopDetails}
               onClickBack={() => setShopDetailsFetched(false)}
-              setShopsList={data => props.setShopsList(data)}
+              getShops={() => props.getShops()}
               onClickBackToHome={() => props.onClickBack()}
             />
           )}

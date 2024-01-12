@@ -125,6 +125,7 @@ const FilterDrawerScreen = () => {
     setFieldValue('shopCategory', null);
     setFieldValue('foodCuisines', []);
     dispatch(setIsClickedClearAll(true));
+    dispatch(setFilteredList([]));
     dispatch(setFilterItems(0));
   };
 

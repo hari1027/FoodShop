@@ -7,32 +7,18 @@ import {
 } from 'react-native';
 import React from 'react';
 import {Formik} from 'formik';
-import {getAllShops} from '../webEventHandlers';
 import axios from 'react-native-axios';
 import Snackbar from 'react-native-snackbar';
 import * as yup from 'yup';
 
 const DeleteShopDialog = props => {
-  const getShops = async () => {
-    try {
-      const response = await getAllShops();
-      props.setShopsList(response);
-    } catch (error) {
-      console.log(`Error: ${error}`);
-      Snackbar.show({
-        text: 'Error In Fetching Shops List',
-        duration: Snackbar.LENGTH_LONG,
-      });
-    }
-  };
-
   const deleteShop = async id => {
     try {
       const url = `http://10.0.2.2:5000/FoodShop/${id}`;
       const response = await axios.delete(url);
       if (response.status === 200) {
         console.log('Shop Has Been Deleted Successfully');
-        getShops();
+        props.getShops();
         props.onClickBack();
         Snackbar.show({
           text: 'Shop Has Been Deleted Successfully',
@@ -49,7 +35,6 @@ const DeleteShopDialog = props => {
   };
 
   const handleSubmit = values => {
-    console.log('Form values:', values);
     deleteShop(values.shopId);
   };
 

@@ -16,12 +16,15 @@ import axios from 'react-native-axios';
 
 const SingleShopView = props => {
   const [selectedStars, setSelectedStars] = useState(
-    props.shopDetails.yourRating !== undefined &&
-      props.shopDetails.yourRating !== null
+    props.shopDetails.yourRating !== null &&
+      props.shopDetails.yourRating !== undefined
       ? props.shopDetails.yourRating
       : 0,
   );
   const uniqueEmailId = useSelector(state => state.main.uniqueEmailId);
+
+  const [considerYourNameProp, setConsiderYourNameProp] = useState(true);
+  const [considerYourCommentProp, setConsiderYourCommentProp] = useState(true);
 
   const handleStarPress = index => {
     setSelectedStars(index);
@@ -32,16 +35,29 @@ const SingleShopView = props => {
       shopId: props.shopDetails._id,
       email: uniqueEmailId,
       rating: rating,
-      name: values.yourName !== '' ? values.yourName : null,
-      comments: values.comments !== '' ? values.comments : null,
+      name:
+        values.yourName !== null
+          ? values.yourName
+          : props.shopDetails.yourName
+          ? props.shopDetails.yourName
+          : null,
+      comments:
+        values.comments !== null
+          ? values.comments
+          : props.shopDetails.yourComment
+          ? props.shopDetails.yourComment
+          : null,
     };
     try {
-      const response = await axios.post('http://10.0.2.2:5000/FoodShop', obj);
+      const response = await axios.post(
+        'http://10.0.2.2:5000/submitFeedback',
+        obj,
+      );
       if (response.status === 200) {
         console.log(
           `Your Feedback for shop ${props.shopDetails.shopName} been  Added Successfully`,
         );
-        getShops();
+        props.getShops();
         props.onClickBack();
         Snackbar.show({
           text: `Your Feedback for shop ${props.shopDetails.shopName} been  Added Successfully`,
@@ -63,16 +79,94 @@ const SingleShopView = props => {
         text: 'Rating is required to sumbit the feedback',
         duration: Snackbar.LENGTH_LONG,
       });
-    } else if (values.comments !== '' && values.yourName === '') {
-      Snackbar.show({
-        text: 'Name is required to add comments',
-        duration: Snackbar.LENGTH_LONG,
-      });
+    } else if (
+      (values.yourName !== null && values.yourName !== '') ||
+      (props.shopDetails.yourName !== null &&
+        props.shopDetails.yourName !== undefined &&
+        considerYourNameProp === true)
+    ) {
+      if (
+        (values.comments !== null && values.comments !== '') ||
+        (props.shopDetails.yourComment !== null &&
+          props.shopDetails.yourComment !== undefined &&
+          considerYourCommentProp === true)
+      ) {
+        let finalValues = {
+          yourName:
+            values.yourName !== null && values.yourName !== ''
+              ? values.yourName
+              : props.shopDetails.yourName !== null &&
+                props.shopDetails.yourName !== undefined
+              ? props.shopDetails.yourName
+              : null,
+          comments:
+            values.comments !== null && values.comments !== ''
+              ? values.comments
+              : props.shopDetails.yourComment !== null &&
+                props.shopDetails.yourComment !== undefined
+              ? props.shopDetails.yourComment
+              : null,
+        };
+        submitFeedBack(selectedStars, finalValues);
+      } else {
+        Snackbar.show({
+          text: 'Comments is needed if you want to add feedback',
+          duration: Snackbar.LENGTH_LONG,
+        });
+      }
+    } else if (
+      (values.comments !== null && values.comments !== '') ||
+      (props.shopDetails.yourComment !== null &&
+        props.shopDetails.yourComment !== undefined &&
+        considerYourCommentProp === true)
+    ) {
+      if (
+        (values.yourName !== null && values.yourName !== '') ||
+        (props.shopDetails.yourName !== null &&
+          props.shopDetails.yourName !== undefined &&
+          considerYourNameProp === true)
+      ) {
+        let finalValues = {
+          yourName:
+            values.yourName !== null && values.yourName !== ''
+              ? values.yourName
+              : props.shopDetails.yourName !== null &&
+                props.shopDetails.yourName !== undefined
+              ? props.shopDetails.yourName
+              : null,
+          comments:
+            values.comments !== null && values.comments !== ''
+              ? values.comments
+              : props.shopDetails.yourComment !== null &&
+                props.shopDetails.yourComment !== undefined
+              ? props.shopDetails.yourComment
+              : null,
+        };
+        submitFeedBack(selectedStars, finalValues);
+      } else {
+        Snackbar.show({
+          text: 'Name is required if you want to add feedback',
+          duration: Snackbar.LENGTH_LONG,
+        });
+      }
     } else {
-      console.log('rating:', selectedStars);
-      console.log('Form values:', values);
-      submitFeedBack(selectedStars, values);
-      props.onClickBack();
+      let finalValues = {
+        yourName:
+          values.yourName !== null && values.yourName !== ''
+            ? values.yourName
+            : props.shopDetails.yourName !== null &&
+              props.shopDetails.yourName !== undefined
+            ? props.shopDetails.yourName
+            : null,
+        comments:
+          values.comments !== null && values.comments !== ''
+            ? values.comments
+            : props.shopDetails.yourComment !== null &&
+              props.shopDetails.yourComment !== undefined
+            ? props.shopDetails.yourComment
+            : null,
+      };
+      submitFeedBack(selectedStars, finalValues);
     }
   };
 
@@ -89,10 +183,7 @@ const SingleShopView = props => {
     comments: yup
       .string()
       .notRequired()
-      .matches(
-        /^[a-zA-Z0-9\s,\.:/-]+$/,
-        'Comments should only contain letters, numbers and forward slash and comma',
-      )
+      .min(2, 'Comments must be at least 2 characters')
       .max(500, 'Comments cannot exceed 500 characters'),
   });
 
@@ -234,42 +325,82 @@ const SingleShopView = props => {
             style={{
               display: 'flex',
               flexDirection: 'row',
+              gap: 10,
             }}>
-            <Text style={styles.headingName}>Rating:</Text>
-            {props.shopDetails.avgRating !== undefined &&
-            props.shopDetails.avgRating !== null ? (
-              <>
+            <View style={{display: 'flex', flexDirection: 'row'}}>
+              <Text style={styles.headingName}>Rating:</Text>
+              {props.shopDetails.avgRating !== undefined &&
+              props.shopDetails.avgRating !== null ? (
+                <>
+                  <Text
+                    style={{
+                      marginLeft: 5,
+                      fontWeight: 'bold',
+                      color: 'orange',
+                    }}>
+                    {props.shopDetails.avgRating}
+                  </Text>
+                  <View style={{marginTop: 3, marginLeft: 2}}>
+                    <Icon name="star" size={15} color="orange" />
+                  </View>
+                  <Text
+                    style={{
+                      marginLeft: 2,
+                      fontWeight: 'bold',
+                      color: '#147DF5',
+                    }}>
+                    {`(${props.shopDetails.totalPeopleGivenRating} Voted)`}
+                  </Text>
+                </>
+              ) : (
                 <Text
                   style={{marginLeft: 5, fontWeight: 'bold', color: 'orange'}}>
-                  {props.shopDetails.avgRating}
+                  -
                 </Text>
-                <View style={{marginTop: 3, marginLeft: 2}}>
-                  <Icon name="star" size={15} color="orange" />
-                </View>
-              </>
-            ) : (
-              <Text
-                style={{marginLeft: 5, fontWeight: 'bold', color: 'orange'}}>
-                -
-              </Text>
-            )}
+              )}
+            </View>
+            <View style={{display: 'flex', flexDirection: 'row'}}>
+              <Text style={styles.headingName}>Comments:</Text>
+              {props.shopDetails.totalPeopleGivenComments !== undefined &&
+              props.shopDetails.totalPeopleGivenComments !== null &&
+              props.shopDetails.totalPeopleGivenComments > 0 ? (
+                <>
+                  <View style={{marginTop: 3, marginLeft: 5}}>
+                    <Icon name="comment" size={15} color="orange" />
+                  </View>
+                  <Text
+                    style={{
+                      marginLeft: 2,
+                      fontWeight: 'bold',
+                      color: '#147DF5',
+                    }}>
+                    {props.shopDetails.totalPeopleGivenComments}
+                  </Text>
+                </>
+              ) : (
+                <Text
+                  style={{marginLeft: 5, fontWeight: 'bold', color: 'orange'}}>
+                  -
+                </Text>
+              )}
+            </View>
           </View>
         </View>
       </View>
       <Formik
         initialValues={{
-          yourName: '',
-          comments: '',
+          yourName: null,
+          comments: null,
         }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}>
         {({
-          handleChange,
           handleBlur,
           values,
           errors,
           touched,
           handleSubmit,
+          setFieldValue,
         }) => (
           <>
             <View
@@ -322,9 +453,19 @@ const SingleShopView = props => {
               <View>
                 <Text style={styles.headerName}>Name</Text>
                 <TextInput
-                  onChangeText={handleChange('yourName')}
+                  onChangeText={text => {
+                    setFieldValue('yourName', text);
+                    setConsiderYourNameProp(false);
+                  }}
                   onBlur={handleBlur('yourName')}
-                  value={props.shopDetails.yourName || values.yourName}
+                  value={
+                    values.yourName !== null
+                      ? values.yourName
+                      : props.shopDetails.yourName !== null &&
+                        props.shopDetails.yourName !== undefined
+                      ? props.shopDetails.yourName
+                      : ''
+                  }
                   placeholder="Enter YourName"
                   style={styles.textBox}
                   placeholderTextColor={'#999'}
@@ -336,9 +477,19 @@ const SingleShopView = props => {
               <View>
                 <Text style={styles.headerName}>Comments</Text>
                 <TextInput
-                  onChangeText={handleChange('comments')}
+                  onChangeText={text => {
+                    setFieldValue('comments', text);
+                    setConsiderYourCommentProp(false);
+                  }}
                   onBlur={handleBlur('comments')}
-                  value={props.shopDetails.comments || values.comments}
+                  value={
+                    values.comments !== null
+                      ? values.comments
+                      : props.shopDetails.yourComment !== null &&
+                        props.shopDetails.yourComment !== undefined
+                      ? props.shopDetails.yourComment
+                      : ''
+                  }
                   placeholder="Enter Comment"
                   style={styles.textBox}
                   placeholderTextColor={'#999'}
@@ -356,13 +507,13 @@ const SingleShopView = props => {
                 style={styles.button}>
                 <Text style={styles.buttonText}>Back</Text>
               </TouchableOpacity>
-              {props.shopDetails.yourRating !== undefined &&
-              props.shopDetails.yourRating !== null ? (
+              {props.shopDetails.yourRating !== null &&
+              props.shopDetails.yourRating !== undefined ? (
                 <>
                   <TouchableOpacity
                     onPress={handleSubmit}
                     style={styles.button}>
-                    <Text style={styles.buttonText}>Submit Feedback</Text>
+                    <Text style={styles.buttonText}>update Feedback</Text>
                   </TouchableOpacity>
                 </>
               ) : (
@@ -370,7 +521,7 @@ const SingleShopView = props => {
                   <TouchableOpacity
                     onPress={handleSubmit}
                     style={styles.button}>
-                    <Text style={styles.buttonText}>Update Feedback</Text>
+                    <Text style={styles.buttonText}>Submit Feedback</Text>
                   </TouchableOpacity>
                 </>
               )}

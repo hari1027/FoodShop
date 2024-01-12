@@ -14,25 +14,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'react-native-axios';
 import Snackbar from 'react-native-snackbar';
 import * as yup from 'yup';
-import {getAllShops} from '../webEventHandlers';
 
 const UpdateShopForm = props => {
-  console.log(props.shopDetails);
-
   const [modalVisible, setModalVisible] = useState(false);
-
-  const getShops = async () => {
-    try {
-      const response = await getAllShops();
-      props.setShopsList(response);
-    } catch (error) {
-      console.log(`Error: ${error}`);
-      Snackbar.show({
-        text: 'Error In Fetching Shops List',
-        duration: Snackbar.LENGTH_LONG,
-      });
-    }
-  };
 
   const updateShop = async values => {
     try {
@@ -40,7 +24,7 @@ const UpdateShopForm = props => {
       const response = await axios.put(url, values);
       if (response.status === 200) {
         console.log('Shop Has Been Updated Successfully');
-        getShops();
+        props.getShops();
         props.onClickBackToHome();
         Snackbar.show({
           text: 'Shop Has Been Updated Successfully',
@@ -57,33 +41,12 @@ const UpdateShopForm = props => {
   };
 
   const handleSubmit = values => {
-    console.log('Form values:', values);
     updateShop(values);
   };
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
   };
-
-  const renderCheckBox = (itemValue, isSelected) => (
-    <TouchableOpacity
-      key={itemValue.value}
-      onPress={() => {
-        const selectedValues = values.foodCuisines || [];
-        const updatedValues = isSelected
-          ? selectedValues.filter(value => value !== itemValue.value)
-          : [...selectedValues, itemValue.value];
-        handleSelect(updatedValues);
-      }}
-      style={{flexDirection: 'row', alignItems: 'center', marginVertical: 5}}>
-      <Icon
-        name={isSelected ? 'check-box' : 'check-box-outline-blank'}
-        size={24}
-        color={isSelected ? 'green' : '#aaa'}
-      />
-      <Text style={{marginLeft: 10}}>{itemValue.label}</Text>
-    </TouchableOpacity>
-  );
 
   const CustomDropdownIcon = () => {
     return (

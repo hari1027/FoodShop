@@ -52,6 +52,7 @@ const MultiSelectPicker = props => {
               {label: 'Japanese', value: 'Japanese'},
               {label: 'Italian', value: 'Italian'},
               {label: 'American', value: 'American'},
+              {label: 'Arabian', value: 'Arabian'},
               {label: 'Kerala', value: 'Kerala'},
               {label: 'Hydrabadi', value: 'Hydrabadi'},
               {label: 'TamilNadu', value: 'TamilNadu'},

@@ -14,23 +14,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'react-native-axios';
 import Snackbar from 'react-native-snackbar';
 import * as yup from 'yup';
-import {getAllShops} from '../webEventHandlers';
 
 const AddShopForm = props => {
   const [modalVisible, setModalVisible] = useState(false);
-
-  const getShops = async () => {
-    try {
-      const response = await getAllShops();
-      props.setShopsList(response);
-    } catch (error) {
-      console.log(`Error: ${error}`);
-      Snackbar.show({
-        text: 'Error In Fetching Shops List',
-        duration: Snackbar.LENGTH_LONG,
-      });
-    }
-  };
 
   const addShop = async values => {
     try {
@@ -40,7 +26,7 @@ const AddShopForm = props => {
       );
       if (response.status === 200) {
         console.log('Shop Has Been Added Successfully');
-        getShops();
+        props.getShops();
         props.onClickBack();
         Snackbar.show({
           text: 'Shop Has Been Added Successfully',
@@ -57,7 +43,6 @@ const AddShopForm = props => {
   };
 
   const handleSubmit = values => {
-    console.log('Form values:', values);
     addShop(values);
   };
 

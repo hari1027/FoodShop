@@ -12,8 +12,6 @@ export const Router = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const {appwrite, isLoggedIn, setIsLoggedIn} = useContext(AppwriteContext);
 
-  const uniqueEmail = useSelector((state: any) => state.main.uniqueEmailId);
-
   useEffect(() => {
     appwrite
       .getCurrentUser()

@@ -40,9 +40,13 @@ const ShopCard = ({shop}) => {
                 style={{marginLeft: 5, fontWeight: 'bold', color: 'orange'}}>
                 {shop.avgRating}
               </Text>
-              <View style={{marginTop: 3, marginLeft: 2}}>
+              <View style={{marginTop: 2, marginLeft: 2}}>
                 <Icon name="star" size={15} color="orange" />
               </View>
+              <Text
+                style={{marginLeft: 2, fontWeight: 'bold', color: '#147DF5'}}>
+                {`(${shop.totalPeopleGivenRating} Voted)`}
+              </Text>
             </>
           ) : (
             <Text style={{marginLeft: 5, fontWeight: 'bold', color: 'orange'}}>

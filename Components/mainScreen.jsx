@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import React, {useEffect, useState, useContext} from 'react';
 import ShopCard from './shopCard';
-import {getAllShops, getShopRatingAndFeedback} from '../webEventHandlers';
+import {getAllShops} from '../webEventHandlers';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AddShopForm from './addShopForm';
 import DeleteShopDialog from './deleteShopDialog';
@@ -16,6 +16,8 @@ import {useSelector, useDispatch} from 'react-redux';
 import {setIsClickedClearAll} from '../mainReducers';
 import SingleShopView from './singleShopView';
 import {AppwriteContext} from '../LoginComponents/appwrite/AppwriteContext';
+import axios from 'react-native-axios';
+import store from '../store';
 
 const MainScreen = ({navigation}) => {
   const dispatch = useDispatch();
@@ -25,7 +27,7 @@ const MainScreen = ({navigation}) => {
   );
   const IsClickedClearAll = useSelector(state => state.main.IsClickedClearAll);
   const filterItems = useSelector(state => state.main.filterItems);
-  const uniqueEmailId = useSelector(state => state.main.uniqueEmailId);
+  const uniqueEmail = useSelector(state => state.main.uniqueEmailId);
 
   const {appwrite, setIsLoggedIn} = useContext(AppwriteContext);
 
@@ -41,32 +43,13 @@ const MainScreen = ({navigation}) => {
       dispatch(setIsClickedClearAll(false));
     } else if (filteredList.length > 0) {
       setShopsList(filteredList);
+      getFilteredShopsList();
     } else if (isFilteredListEmpty === true) {
       setShopsList([]);
     } else {
       getShops();
-      shopsList.map(data => {
-        const response = getShopRatingAndFeedback(data._id);
-        if (response.status === 200) {
-          const filteredArray = shopsList.filter(item => item._id !== data._id);
-          let updatedShop = {...data, avgRating: response.data.averageRating};
-          response.data.feedback.map(item => {
-            if (item.email === uniqueEmailId) {
-              updatedShop = {...updatedShop, yourRating: item.rating};
-              if (item.name !== undefined && item.name !== null) {
-                updatedShop = {...updatedShop, yourName: item.name};
-              }
-              if (item.comments !== undefined && item.comments !== null) {
-                updatedShop = {...updatedShop, yourComment: item.comments};
-              }
-            }
-          });
-          filteredArray.push(updatedShop);
-          setShopsList(filteredArray);
-        }
-      });
     }
-  }, [filteredList, IsClickedClearAll]);
+  }, [filteredList, IsClickedClearAll, uniqueEmail]);
 
   const [addShopForm, setAddShopForm] = useState(false);
   const [deleteShopForm, setDeleteShopForm] = useState(false);
@@ -77,11 +60,94 @@ const MainScreen = ({navigation}) => {
 
   const getShops = async () => {
     try {
-      const response = await getAllShops();
-      setShopsList(response);
+      let resp = await getAllShops();
+      if (resp) {
+        setShopsList(resp);
+        resp.map(async data => {
+          try {
+            const response = await axios.get(
+              `http://10.0.2.2:5000/getShopRatingAndFeedback/${data._id}`,
+            );
+            if (response.status === 200) {
+              console.log(
+                `Rating and Feedback of shop with Id:${data._id} have been fetched Successfully `,
+              );
+              let filteredArray = resp;
+              let individualData = response.data.shop.feedback;
+              let updatedShop = {
+                ...data,
+                avgRating: response.data.averageRating,
+                totalPeopleGivenRating: response.data.totalPeopleGivenRating,
+                totalPeopleGivenComments:
+                  response.data.totalPeopleGivenComments,
+              };
+              individualData.map(item => {
+                if (item.email === uniqueEmail) {
+                  updatedShop = {...updatedShop, yourRating: item.rating};
+                  if (item.name !== undefined && item.name !== null) {
+                    updatedShop = {...updatedShop, yourName: item.name};
+                  }
+                  if (item.comments !== undefined && item.comments !== null) {
+                    updatedShop = {...updatedShop, yourComment: item.comments};
+                  }
+                }
+              });
+              filteredArray = filteredArray.filter(
+                item => item._id !== data._id,
+              );
+              filteredArray.push(updatedShop);
+              resp = filteredArray;
+              setShopsList(filteredArray);
+            }
+          } catch (error) {
+            console.log(`${error}`);
+          }
+        });
+      }
     } catch (error) {
       console.log(`Error: ${error}`);
     }
+  };
+
+  const getFilteredShopsList = async () => {
+    let resp = filteredList;
+    resp.map(async data => {
+      try {
+        const response = await axios.get(
+          `http://10.0.2.2:5000/getShopRatingAndFeedback/${data._id}`,
+        );
+        if (response.status === 200) {
+          console.log(
+            `Rating and Feedback of shop with Id:${data._id} have been fetched Successfully `,
+          );
+          let filteredArray = resp;
+          let individualData = response.data.shop.feedback;
+          let updatedShop = {
+            ...data,
+            avgRating: response.data.averageRating,
+            totalPeopleGivenRating: response.data.totalPeopleGivenRating,
+            totalPeopleGivenComments: response.data.totalPeopleGivenComments,
+          };
+          individualData.map(item => {
+            if (item.email === store.getState().main.uniqueEmailId) {
+              updatedShop = {...updatedShop, yourRating: item.rating};
+              if (item.name !== undefined && item.name !== null) {
+                updatedShop = {...updatedShop, yourName: item.name};
+              }
+              if (item.comments !== undefined && item.comments !== null) {
+                updatedShop = {...updatedShop, yourComment: item.comments};
+              }
+            }
+          });
+          filteredArray = filteredArray.filter(item => item._id !== data._id);
+          filteredArray.push(updatedShop);
+          resp = filteredArray;
+          setShopsList(filteredArray);
+        }
+      } catch (error) {
+        console.log(`${error}`);
+      }
+    });
   };
 
   const clickedCard = shop => {
@@ -175,6 +241,20 @@ const MainScreen = ({navigation}) => {
                   </View>
                   <Text style={styles.buttonText}>Filter</Text>
                 </View>
+                <View
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexDirection: 'column',
+                  }}>
+                  <Icon
+                    name="sign-out"
+                    size={24}
+                    color="#900D09"
+                    onPress={() => handleLogout()}
+                  />
+                  <Text style={styles.buttonText}>Logout</Text>
+                </View>
               </View>
             </View>
             <ScrollView style={{display: 'flex', flex: 1}}>
@@ -199,38 +279,32 @@ const MainScreen = ({navigation}) => {
                   <Text>No Data Available 🤷‍♀️</Text>
                 </View>
               )}
-              <View>
-                <TouchableOpacity
-                  style={styles.logoutbutton}
-                  onPress={handleLogout}>
-                  <Text style={styles.logoutbuttonText}>Logout</Text>
-                </TouchableOpacity>
-              </View>
             </ScrollView>
           </View>
         )}
       {addShopForm && (
         <AddShopForm
           onClickBack={() => setAddShopForm(false)}
-          setShopsList={data => setShopsList(data)}
+          getShops={() => getShops()}
         />
       )}
       {deleteShopForm && (
         <DeleteShopDialog
           onClickBack={() => setDeleteShopForm(false)}
-          setShopsList={data => setShopsList(data)}
+          getShops={() => getShops()}
         />
       )}
       {updateShopForm && (
         <GetShopDetailsForm
           onClickBack={() => setUpdateShopForm(false)}
-          setShopsList={data => setShopsList(data)}
+          getShops={() => getShops()}
         />
       )}
       {singleShopView && (
         <SingleShopView
           shopDetails={singleShopDetails}
           onClickBack={() => setSingleShopView(false)}
+          getShops={() => getShops()}
         />
       )}
     </View>
@@ -244,18 +318,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#212121',
     fontSize: 12,
-    fontWeight: 'bold',
-  },
-  logoutbutton: {
-    backgroundColor: 'red',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-    margin: 20,
-  },
-  logoutbuttonText: {
-    color: 'white',
-    fontSize: 16,
     fontWeight: 'bold',
   },
 });
