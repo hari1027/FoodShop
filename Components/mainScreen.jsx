@@ -7,17 +7,17 @@ import {
 } from 'react-native';
 import React, {useEffect, useState, useContext} from 'react';
 import ShopCard from './shopCard';
-import {getAllShops} from '../webEventHandlers';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AddShopForm from './addShopForm';
 import DeleteShopDialog from './deleteShopDialog';
 import GetShopDetailsForm from './getShopDetailsForm';
 import {useSelector, useDispatch} from 'react-redux';
-import {setIsClickedClearAll} from '../mainReducers';
+import {setIsClickedClearAll, setSavedShopsId} from '../mainReducers';
 import SingleShopView from './singleShopView';
 import {AppwriteContext} from '../LoginComponents/appwrite/AppwriteContext';
 import axios from 'react-native-axios';
 import store from '../store';
+import Snackbar from 'react-native-snackbar';
 
 const MainScreen = ({navigation}) => {
   const dispatch = useDispatch();
@@ -57,13 +57,134 @@ const MainScreen = ({navigation}) => {
   const [shopsList, setShopsList] = useState([]);
   const [singleShopView, setSingleShopView] = useState(false);
   const [singleShopDetails, setSingleShopDetails] = useState({});
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
+  const getShopDataById = async item => {
+    try {
+      const response = await axios.get(`http://10.0.2.2:5000/FoodShop/${item}`);
+      if (response.status === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      Snackbar.show({
+        text: 'Error In Fetching Shop List',
+        duration: Snackbar.LENGTH_LONG,
+      });
+    }
+  };
+
+  const toggleBookmark = async () => {
+    setIsBookmarked(!isBookmarked);
+    if (isBookmarked === false) {
+      try {
+        const response = await axios.get(
+          `http://10.0.2.2:5000/getBookmarkedShops/${uniqueEmail}`,
+        );
+        if (response.status === 200) {
+          console.log('Saved List is fetched Successfully');
+          let savedShopIds = [];
+          response.data.bookmarkedShopsList.map(item => {
+            savedShopIds.push(item.shopId);
+          });
+          const savedShopsData = [];
+
+          try {
+            // Use Promise.all to await all promises
+            const responses = await Promise.all(
+              savedShopIds.map(async item => {
+                try {
+                  return await getShopDataById(item);
+                } catch (error) {
+                  console.log(`Error: ${error}`);
+                  // Return a default value or handle the error as needed
+                  return null;
+                }
+              }),
+            );
+
+            // Filter out any null values (failed requests)
+            const successfulResponses = responses.filter(
+              response => response !== null,
+            );
+
+            // Do something with the successful responses
+            savedShopsData.push(...successfulResponses);
+          } catch (error) {
+            console.log(`Error: ${error}`);
+          }
+
+          setShopsList(savedShopsData);
+
+          let resp = savedShopsData;
+          resp.map(async data => {
+            try {
+              const response = await axios.get(
+                `http://10.0.2.2:5000/getShopRatingAndFeedback/${data._id}`,
+              );
+              if (response.status === 200) {
+                console.log(
+                  `Rating and Feedback of shop with Id:${data._id} have been fetched Successfully `,
+                );
+                let filteredArray = resp;
+                let individualData = response.data.shop.feedback;
+                let updatedShop = {
+                  ...data,
+                  avgRating: response.data.averageRating,
+                  totalPeopleGivenRating: response.data.totalPeopleGivenRating,
+                  totalPeopleGivenComments:
+                    response.data.totalPeopleGivenComments,
+                };
+                individualData.map(item => {
+                  if (item.email === store.getState().main.uniqueEmailId) {
+                    updatedShop = {...updatedShop, yourRating: item.rating};
+                    if (item.name !== undefined && item.name !== null) {
+                      updatedShop = {...updatedShop, yourName: item.name};
+                    }
+                    if (item.comments !== undefined && item.comments !== null) {
+                      updatedShop = {
+                        ...updatedShop,
+                        yourComment: item.comments,
+                      };
+                    }
+                  }
+                });
+                filteredArray = filteredArray.filter(
+                  item => item._id !== data._id,
+                );
+                filteredArray.push(updatedShop);
+                resp = filteredArray;
+                setShopsList(filteredArray);
+              }
+            } catch (error) {
+              console.log(`${error}`);
+            }
+          });
+          if (response.data.bookmarkedShopsList.length === 0) {
+            setShopsList([]);
+          }
+        }
+      } catch (error) {
+        console.log(`Error: ${error}`);
+        Snackbar.show({
+          text: 'Error In Fetching Saved List',
+          duration: Snackbar.LENGTH_LONG,
+        });
+      }
+    } else {
+      getShops();
+    }
+  };
 
   const getShops = async () => {
     try {
-      let resp = await getAllShops();
-      if (resp) {
-        setShopsList(resp);
-        resp.map(async data => {
+      let resp = await axios.get('http://10.0.2.2:5000/FoodShop');
+      if (resp.status === 200) {
+        console.log('Shops List is fetched Successfully');
+      }
+      if (resp.data) {
+        setShopsList(resp.data);
+        resp.data.map(async data => {
           try {
             const response = await axios.get(
               `http://10.0.2.2:5000/getShopRatingAndFeedback/${data._id}`,
@@ -72,7 +193,7 @@ const MainScreen = ({navigation}) => {
               console.log(
                 `Rating and Feedback of shop with Id:${data._id} have been fetched Successfully `,
               );
-              let filteredArray = resp;
+              let filteredArray = resp.data;
               let individualData = response.data.shop.feedback;
               let updatedShop = {
                 ...data,
@@ -96,7 +217,7 @@ const MainScreen = ({navigation}) => {
                 item => item._id !== data._id,
               );
               filteredArray.push(updatedShop);
-              resp = filteredArray;
+              resp.data = filteredArray;
               setShopsList(filteredArray);
             }
           } catch (error) {
@@ -106,6 +227,10 @@ const MainScreen = ({navigation}) => {
       }
     } catch (error) {
       console.log(`Error: ${error}`);
+      Snackbar.show({
+        text: 'Error In Fetching Shops List',
+        duration: Snackbar.LENGTH_LONG,
+      });
     }
   };
 
@@ -151,6 +276,7 @@ const MainScreen = ({navigation}) => {
   };
 
   const clickedCard = shop => {
+    setIsBookmarked(false);
     setSingleShopView(true);
     setSingleShopDetails(shop);
   };
@@ -184,7 +310,12 @@ const MainScreen = ({navigation}) => {
                     size={24}
                     color="#009688"
                     onPress={() => {
-                      setAddShopForm(true);
+                      isBookmarked
+                        ? Snackbar.show({
+                            text: 'Please DeSelect Saved Option and Try',
+                            duration: Snackbar.LENGTH_LONG,
+                          })
+                        : setAddShopForm(true);
                     }}
                   />
                   <Text style={styles.buttonText}>Add</Text>
@@ -199,7 +330,14 @@ const MainScreen = ({navigation}) => {
                     name="pencil"
                     size={24}
                     color="#4caf50"
-                    onPress={() => setUpdateShopForm(true)}
+                    onPress={() =>
+                      isBookmarked
+                        ? Snackbar.show({
+                            text: 'Please DeSelect Saved Option and Try',
+                            duration: Snackbar.LENGTH_LONG,
+                          })
+                        : setUpdateShopForm(true)
+                    }
                   />
                   <Text style={styles.buttonText}>Update</Text>
                 </View>
@@ -213,9 +351,30 @@ const MainScreen = ({navigation}) => {
                     name="trash"
                     size={24}
                     color="red"
-                    onPress={() => setDeleteShopForm(true)}
+                    onPress={() =>
+                      isBookmarked
+                        ? Snackbar.show({
+                            text: 'Please DeSelect Saved Option and Try',
+                            duration: Snackbar.LENGTH_LONG,
+                          })
+                        : setDeleteShopForm(true)
+                    }
                   />
                   <Text style={styles.buttonText}>Delete</Text>
+                </View>
+                <View
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexDirection: 'column',
+                  }}>
+                  <Icon
+                    name="bookmark"
+                    size={24}
+                    color={isBookmarked ? 'green' : 'pink'}
+                    onPress={toggleBookmark}
+                  />
+                  <Text style={styles.buttonText}>Saved </Text>
                 </View>
                 <View
                   style={{
@@ -228,7 +387,14 @@ const MainScreen = ({navigation}) => {
                       name="filter"
                       size={24}
                       color="#007bff"
-                      onPress={() => navigation.openDrawer()}
+                      onPress={() =>
+                        isBookmarked
+                          ? Snackbar.show({
+                              text: 'Please DeSelect Saved Option and Try',
+                              duration: Snackbar.LENGTH_LONG,
+                            })
+                          : navigation.openDrawer()
+                      }
                     />
                     <Text
                       style={{
@@ -251,7 +417,14 @@ const MainScreen = ({navigation}) => {
                     name="sign-out"
                     size={24}
                     color="#900D09"
-                    onPress={() => handleLogout()}
+                    onPress={() =>
+                      isBookmarked
+                        ? Snackbar.show({
+                            text: 'Please DeSelect Saved Option and Try',
+                            duration: Snackbar.LENGTH_LONG,
+                          })
+                        : handleLogout()
+                    }
                   />
                   <Text style={styles.buttonText}>Logout</Text>
                 </View>

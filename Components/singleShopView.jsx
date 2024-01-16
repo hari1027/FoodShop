@@ -5,6 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  ScrollView,
+  PermissionsAndroid,
+  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Formik} from 'formik';
@@ -13,6 +16,7 @@ import * as yup from 'yup';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import {useSelector} from 'react-redux';
 import axios from 'react-native-axios';
+import Geolocation from '@react-native-community/geolocation';
 
 const SingleShopView = props => {
   const [selectedStars, setSelectedStars] = useState(
@@ -25,6 +29,7 @@ const SingleShopView = props => {
 
   const [considerYourNameProp, setConsiderYourNameProp] = useState(true);
   const [considerYourCommentProp, setConsiderYourCommentProp] = useState(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const handleStarPress = index => {
     setSelectedStars(index);
@@ -187,8 +192,136 @@ const SingleShopView = props => {
       .max(500, 'Comments cannot exceed 500 characters'),
   });
 
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+
+  const requestLocationPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Location Permission',
+          message: 'App needs access to your location.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        Geolocation.getCurrentPosition(
+          position => {
+            setLatitude(position.coords.latitude);
+            setLongitude(position.coords.longitude);
+          },
+          error => console.log(error.message),
+          {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+        );
+      } else {
+        console.log('Location permission denied ');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+  const openDirection = () => {
+    if (latitude !== null && longitude !== null) {
+      const currentLocation = `${latitude},${longitude}`;
+      const destination = props.shopDetails.shopAddress;
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${currentLocation}&destination=${destination}`;
+      Linking.openURL(url);
+    } else {
+      Snackbar.show({
+        text: 'Latitude and Longitude is fetching wait few seconds and try again',
+        duration: Snackbar.LENGTH_LONG,
+      });
+    }
+  };
+
+  const bookMarkThisShop = async () => {
+    const values = {shopId: props.shopDetails._id, email: uniqueEmailId};
+    try {
+      const response = await axios.post(
+        'http://10.0.2.2:5000/bookmarkShop',
+        values,
+      );
+      if (response.status === 200) {
+        console.log('Shop Has Been Saved Successfully');
+        Snackbar.show({
+          text: 'Shop Has Been Saved Successfully',
+          duration: Snackbar.LENGTH_LONG,
+        });
+        setIsBookmarked(true);
+      }
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      Snackbar.show({
+        text: 'Error In Saving The Shop',
+        duration: Snackbar.LENGTH_LONG,
+      });
+    }
+  };
+
+  const removebookMarkOfThisShop = async () => {
+    const values = {shopId: props.shopDetails._id, email: uniqueEmailId};
+    try {
+      const response = await axios.post(
+        'http://10.0.2.2:5000/removeShopFromBookmark',
+        values,
+      );
+      if (response.status === 200) {
+        console.log('Shop Has Been removed from bookmarks Successfully');
+        Snackbar.show({
+          text: 'Shop Has Been removed from bookmarks Successfully',
+          duration: Snackbar.LENGTH_LONG,
+        });
+        setIsBookmarked(false);
+      }
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      Snackbar.show({
+        text: 'Error In removing The Shop from bookmarks',
+        duration: Snackbar.LENGTH_LONG,
+      });
+    }
+  };
+
+  useEffect(() => {
+    requestLocationPermission();
+  }, []);
+
+  const getSavedList = async () => {
+    try {
+      const response = await axios.get(
+        `http://10.0.2.2:5000/getBookmarkedShops/${uniqueEmailId}`,
+      );
+      if (response.status === 200) {
+        console.log('Saved List is fetched Successfully');
+        let savedShopIds = [];
+        response.data.bookmarkedShopsList.map(item => {
+          savedShopIds.push(item.shopId);
+        });
+        if (savedShopIds.includes(props.shopDetails._id)) {
+          setIsBookmarked(true);
+        } else {
+          setIsBookmarked(false);
+        }
+      }
+    } catch (error) {
+      console.log(`Error: ${error}`);
+      Snackbar.show({
+        text: 'Error In Fetching Saved List',
+        duration: Snackbar.LENGTH_LONG,
+      });
+    }
+  };
+
+  useEffect(() => {
+    getSavedList();
+  }, []);
+
   return (
-    <View style={styles.mainDiv}>
+    <ScrollView style={styles.mainDiv}>
       <View
         style={[
           styles.headingDiv,
@@ -386,6 +519,51 @@ const SingleShopView = props => {
             </View>
           </View>
         </View>
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 20,
+            marginTop: 10,
+          }}>
+          <TouchableOpacity
+            onPress={isBookmarked ? removebookMarkOfThisShop : bookMarkThisShop}
+            style={
+              isBookmarked
+                ? [
+                    styles.removeBookMarkButton,
+                    {width: 160, alignItems: 'center'},
+                  ]
+                : [styles.fourbuttons, {width: 160, alignItems: 'center'}]
+            }>
+            <Text style={styles.buttonText}>
+              {isBookmarked ? 'Remove From Saved' : 'BookMark This Shop'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={openDirection}
+            style={[styles.fourbuttons, {width: 160, alignItems: 'center'}]}>
+            <Text style={styles.buttonText}>Get Direction In Maps</Text>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 20,
+            marginTop: 10,
+          }}>
+          <TouchableOpacity
+            style={[styles.fourbuttons, {width: 160, alignItems: 'center'}]}>
+            <Text style={styles.buttonText}>Show Comments </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.fourbuttons, {width: 160, alignItems: 'center'}]}>
+            <Text style={styles.buttonText}>Show Images</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <Formik
         initialValues={{
@@ -529,12 +707,13 @@ const SingleShopView = props => {
           </>
         )}
       </Formik>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   mainDiv: {
+    display: 'flex',
     flex: 1,
   },
   headingDiv: {
@@ -583,6 +762,16 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#a881af',
+    padding: 8,
+    borderRadius: 10,
+  },
+  fourbuttons: {
+    backgroundColor: 'green',
+    padding: 8,
+    borderRadius: 10,
+  },
+  removeBookMarkButton: {
+    backgroundColor: 'red',
     padding: 8,
     borderRadius: 10,
   },

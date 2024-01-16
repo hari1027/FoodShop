@@ -1,11 +1,10 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
 } from '@react-navigation/drawer';
 import FilterDrawerScreen from './Components/filterDrawerScreen';
 import MainScreen from './Components/mainScreen';
-import {useSelector} from 'react-redux';
 
 const Drawer = createDrawerNavigator();
 
