@@ -778,39 +778,73 @@ const SingleShopView = props => {
               Welcome To Comments Section 😁
             </Text>
           </View>
+          <View>
+            <Text
+              style={[
+                styles.text,
+                {
+                  paddingTop: 5,
+                  paddingBottom: 5,
+                  alignSelf: 'center',
+                  justifyContent: 'center',
+                  color: 'blue',
+                },
+              ]}>
+              Total Of {`${commentsList.length}`} Comments
+            </Text>
+            <View
+              style={{
+                borderBottomColor: 'gray',
+                borderBottomWidth: 1,
+              }}
+            />
+          </View>
           <ScrollView style={styles.commentsDiv}>
             {commentsList.map((item, index) => {
               return (
-                <View
-                  key={index}
-                  style={{
-                    marginRight: 20,
-                    marginLeft: 20,
-                    marginTop: 5,
-                    display: 'flex',
-                    flexDirection: 'row',
-                  }}>
-                  <Text
+                <View key={index}>
+                  <View
+                    key={index}
                     style={{
-                      fontWeight: 'bold',
-                      color: '#000000',
-                      fontSize: 20,
-                      alignSelf: 'center',
-                      maxWidth: '30%',
+                      marginRight: 20,
+                      marginLeft: 20,
+                      marginTop: 5,
+                      display: 'flex',
+                      flexDirection: 'row',
                     }}>
-                    {`${item.name} :-`}
-                  </Text>
-                  <Text
+                    <Text
+                      style={{
+                        fontWeight: 'bold',
+                        color: '#000000',
+                        fontSize: 20,
+                        alignSelf: 'center',
+                        maxWidth: '30%',
+                      }}>
+                      {`${
+                        item.name.length > 20
+                          ? item.name.slice(0, 20) + '...'
+                          : item.name
+                      } :-`}
+                    </Text>
+                    <Text
+                      style={{
+                        fontWeight: 'bold',
+                        color: 'orange',
+                        fontSize: 20,
+                        marginLeft: 10,
+                        maxWidth: '70%',
+                        alignSelf: 'center',
+                      }}>
+                      {item.comments}
+                    </Text>
+                  </View>
+                  <View
                     style={{
-                      fontWeight: 'bold',
-                      color: 'orange',
-                      fontSize: 20,
-                      marginLeft: 10,
-                      maxWidth: '70%',
-                      alignSelf: 'center',
-                    }}>
-                    {item.comments}
-                  </Text>
+                      borderBottomColor: 'gray',
+                      borderBottomWidth: 1,
+                      marginTop: 5,
+                    }}
+                  />
                 </View>
               );
             })}
@@ -843,7 +877,7 @@ const styles = StyleSheet.create({
   },
   commentsDiv: {
     display: 'flex',
-    flex: 0.9,
+    flex: 0.7,
   },
   headingDiv: {
     backgroundColor: '#a881af',
