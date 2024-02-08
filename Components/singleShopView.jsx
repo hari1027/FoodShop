@@ -8,6 +8,8 @@ import {
   ScrollView,
   PermissionsAndroid,
   Linking,
+  Image,
+  Modal,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Formik} from 'formik';
@@ -32,6 +34,9 @@ const SingleShopView = props => {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [onClickComments, setOnClickComments] = useState(false);
   const [commentsList, setCommentsList] = useState([]);
+  const [openImagesSection, setOpenImagesSection] = useState(false);
+  const [selectedImageUri, setSelectedImageUri] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const handleStarPress = index => {
     setSelectedStars(index);
@@ -328,6 +333,16 @@ const SingleShopView = props => {
     }
   };
 
+  const handleImageDoubleTap = uri => {
+    setSelectedImageUri(uri);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setSelectedImageUri(null);
+    setShowModal(false);
+  };
+
   useEffect(() => {
     requestLocationPermission();
     getSavedList();
@@ -336,7 +351,7 @@ const SingleShopView = props => {
 
   return (
     <ScrollView style={styles.mainDiv}>
-      {!onClickComments && (
+      {!onClickComments && !openImagesSection && (
         <>
           <View
             style={[
@@ -615,10 +630,10 @@ const SingleShopView = props => {
                 <Text style={styles.buttonText}>Show Comments </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[
-                  styles.fourbuttons,
-                  {width: 160, alignItems: 'center'},
-                ]}>
+                style={[styles.fourbuttons, {width: 160, alignItems: 'center'}]}
+                onPress={() => {
+                  setOpenImagesSection(true);
+                }}>
                 <Text style={styles.buttonText}>Show Images</Text>
               </TouchableOpacity>
             </View>
@@ -852,6 +867,133 @@ const SingleShopView = props => {
           <TouchableOpacity
             onPress={() => {
               setOnClickComments(false);
+            }}
+            style={[
+              styles.button,
+              {
+                marginTop: 20,
+                width: 70,
+                alignItems: 'center',
+                alignSelf: 'center',
+              },
+            ]}>
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+        </>
+      )}
+      {openImagesSection && (
+        <>
+          <View
+            style={[
+              styles.headingDiv,
+              {alignItems: 'center', display: 'flex', justifyContent: 'center'},
+            ]}>
+            <Text style={[styles.text, {paddingTop: 5, paddingBottom: 5}]}>
+              Welcome To Images Section 😁
+            </Text>
+          </View>
+          <ScrollView style={{display: 'flex', flex: 0.8}}>
+            <Text
+              style={[
+                styles.text,
+                {
+                  paddingTop: 5,
+                  paddingBottom: 5,
+                  alignSelf: 'center',
+                  justifyContent: 'center',
+                  color: 'blue',
+                },
+              ]}>
+              Menu Card Images
+            </Text>
+            {props.shopDetails.menuImages.length > 0 ? (
+              <ScrollView
+                horizontal
+                style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                {props.shopDetails.menuImages.map(image => (
+                  <TouchableOpacity
+                    key={image.uri}
+                    onLongPress={() => handleImageDoubleTap(image.uri)}
+                    style={{padding: 5}}>
+                    <Image
+                      source={{uri: image.uri}}
+                      style={{width: 100, height: 100}}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            ) : (
+              <View style={{display: 'flex', alignItems: 'center'}}>
+                <Text>No Images Present</Text>
+              </View>
+            )}
+            <Text
+              style={[
+                styles.text,
+                {
+                  paddingTop: 5,
+                  paddingBottom: 5,
+                  alignSelf: 'center',
+                  justifyContent: 'center',
+                  color: 'blue',
+                },
+              ]}>
+              Images Of The Shop
+            </Text>
+            {props.shopDetails.shopImages.length > 0 ? (
+              <ScrollView
+                horizontal
+                style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                {props.shopDetails.shopImages.map(image => (
+                  <TouchableOpacity
+                    key={image.uri}
+                    onLongPress={() => handleImageDoubleTap(image.uri)}
+                    style={{padding: 5}}>
+                    <Image
+                      source={{uri: image.uri}}
+                      style={{width: 100, height: 100}}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            ) : (
+              <View style={{display: 'flex', alignItems: 'center'}}>
+                <Text>No Images Present</Text>
+              </View>
+            )}
+          </ScrollView>
+          <Modal visible={showModal} transparent>
+            <View
+              style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+              <View
+                style={{
+                  backgroundColor: '#a881af',
+                  paddingTop: 30,
+                  paddingBottom: 30,
+                }}>
+                <Image
+                  source={{uri: selectedImageUri}}
+                  style={{width: 300, height: 300}}
+                  resizeMode="contain"
+                />
+                <TouchableOpacity
+                  onPress={closeModal}
+                  style={{position: 'absolute', top: 10, right: 10}}>
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      fontWeight: '900',
+                      color: '#212121',
+                    }}>
+                    ✕
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+          <TouchableOpacity
+            onPress={() => {
+              setOpenImagesSection(false);
             }}
             style={[
               styles.button,

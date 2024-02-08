@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import {Formik} from 'formik';
 import RNPickerSelect from 'react-native-picker-select';
@@ -14,6 +15,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'react-native-axios';
 import Snackbar from 'react-native-snackbar';
 import * as yup from 'yup';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 const AddShopForm = props => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -72,6 +74,102 @@ const AddShopForm = props => {
     },
   };
 
+  const handleAddMenuImage = (values, setValues) => {
+    const options = {
+      title: 'Select Images',
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+      mediaType: 'photo',
+      quality: 0.5,
+      allowsEditing: true,
+      multiple: true,
+    };
+
+    launchImageLibrary(options, response => {
+      if (response.error) {
+        console.error('Failed to open image picker.');
+      } else if (!response.didCancel) {
+        const newImages = response.assets.filter(
+          image =>
+            !values.menuImages.some(
+              selectedImage => selectedImage.fileName === image.fileName,
+            ),
+        );
+        const remainingSlots = 30 - values.menuImages.length;
+        const imagesToAdd = newImages.slice(0, remainingSlots);
+        setValues({
+          ...values,
+          menuImages: [...values.menuImages, ...imagesToAdd],
+        });
+      }
+    });
+  };
+
+  const toggleMenuImageSelection = (values, setValues, uri) => {
+    const {menuImages} = values;
+    if (menuImages.some(image => image.uri === uri)) {
+      setValues({
+        ...values,
+        menuImages: menuImages.filter(image => image.uri !== uri),
+      });
+    } else if (menuImages.length < 30) {
+      setValues({
+        ...values,
+        menuImages: [...menuImages, {uri}],
+      });
+    }
+  };
+
+  const handleAddShopImage = (values, setValues) => {
+    const options = {
+      title: 'Select Images',
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+      mediaType: 'photo',
+      quality: 0.5,
+      allowsEditing: true,
+      multiple: true,
+    };
+
+    launchImageLibrary(options, response => {
+      if (response.error) {
+        console.error('Failed to open image picker.');
+      } else if (!response.didCancel) {
+        const newImages = response.assets.filter(
+          image =>
+            !values.shopImages.some(
+              selectedImage => selectedImage.fileName === image.fileName,
+            ),
+        );
+        const remainingSlots = 30 - values.shopImages.length;
+        const imagesToAdd = newImages.slice(0, remainingSlots);
+        setValues({
+          ...values,
+          shopImages: [...values.shopImages, ...imagesToAdd],
+        });
+      }
+    });
+  };
+
+  const toggleShopImageSelection = (values, setValues, uri) => {
+    const {shopImages} = values;
+    if (shopImages.some(image => image.uri === uri)) {
+      setValues({
+        ...values,
+        shopImages: shopImages.filter(image => image.uri !== uri),
+      });
+    } else if (shopImages.length < 30) {
+      setValues({
+        ...values,
+        shopImages: [...shopImages, {uri}],
+      });
+    }
+  };
+
   const validationSchema = yup.object().shape({
     shopName: yup
       .string()
@@ -120,6 +218,8 @@ const AddShopForm = props => {
         foodCuisines: [],
         shopOwnerName: '',
         shopOwnerNumber: '',
+        menuImages: [],
+        shopImages: [],
       }}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}>
@@ -128,6 +228,7 @@ const AddShopForm = props => {
         handleBlur,
         setFieldValue,
         handleSubmit,
+        setValues,
         values,
         errors,
         touched,
@@ -294,6 +395,103 @@ const AddShopForm = props => {
                   <Text style={styles.errorText}>{errors.shopOwnerNumber}</Text>
                 )}
               </View>
+              <View
+                style={{display: 'flex', flexDirection: 'row', marginTop: 10}}>
+                <Text style={[styles.fieldNamesText, {alignSelf: 'center'}]}>
+                  MenuImages :
+                </Text>
+                <TouchableOpacity
+                  style={[styles.button, {marginLeft: 20}]}
+                  onPress={() => handleAddMenuImage(values, setValues)}>
+                  <Text style={styles.buttonText}>Add MenuImages</Text>
+                </TouchableOpacity>
+              </View>
+              {values.menuImages.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                  {values.menuImages.map(image => (
+                    <TouchableOpacity
+                      key={image.uri}
+                      onPress={() =>
+                        toggleMenuImageSelection(values, setValues, image.uri)
+                      }
+                      style={{padding: 5}}>
+                      <Image
+                        source={{uri: image.uri}}
+                        style={{width: 100, height: 100}}
+                      />
+                      {values.menuImages.some(
+                        selectedImage => selectedImage.uri === image.uri,
+                      ) && (
+                        <View
+                          style={{
+                            position: 'absolute',
+                            top: 5,
+                            right: 5,
+                            backgroundColor: 'blue',
+                            padding: 5,
+                          }}>
+                          <Text style={{color: 'white'}}>✓</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              ) : (
+                <View style={{display: 'flex', alignItems: 'center'}}>
+                  <Text>No Images Present</Text>
+                </View>
+              )}
+
+              <View
+                style={{display: 'flex', flexDirection: 'row', marginTop: 10}}>
+                <Text style={[styles.fieldNamesText, {alignSelf: 'center'}]}>
+                  ShopImages :
+                </Text>
+                <TouchableOpacity
+                  style={[styles.button, {marginLeft: 20}]}
+                  onPress={() => handleAddShopImage(values, setValues)}>
+                  <Text style={styles.buttonText}>Add ShopImages</Text>
+                </TouchableOpacity>
+              </View>
+              {values.shopImages.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                  {values.shopImages.map(image => (
+                    <TouchableOpacity
+                      key={image.uri}
+                      onPress={() =>
+                        toggleShopImageSelection(values, setValues, image.uri)
+                      }
+                      style={{padding: 5}}>
+                      <Image
+                        source={{uri: image.uri}}
+                        style={{width: 100, height: 100}}
+                      />
+                      {values.shopImages.some(
+                        selectedImage => selectedImage.uri === image.uri,
+                      ) && (
+                        <View
+                          style={{
+                            position: 'absolute',
+                            top: 5,
+                            right: 5,
+                            backgroundColor: 'blue',
+                            padding: 5,
+                          }}>
+                          <Text style={{color: 'white'}}>✓</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              ) : (
+                <View style={{display: 'flex', alignItems: 'center'}}>
+                  <Text>No Images Present</Text>
+                </View>
+              )}
             </View>
 
             <View style={styles.buttonDiv}>
