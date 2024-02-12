@@ -21,6 +21,7 @@ import axios from 'react-native-axios';
 import store from '../store';
 import Snackbar from 'react-native-snackbar';
 import Geolocation from '@react-native-community/geolocation';
+import AdminView from './adminView';
 
 const MainScreen = ({navigation}) => {
   const dispatch = useDispatch();
@@ -33,6 +34,15 @@ const MainScreen = ({navigation}) => {
   const uniqueEmail = useSelector(state => state.main.uniqueEmailId);
 
   const {appwrite, setIsLoggedIn} = useContext(AppwriteContext);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (store.getState().main.uniqueEmailId === 'hari04harry@gmail.com') {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [store.getState().main.uniqueEmailId]);
 
   const handleLogout = () => {
     appwrite.logout().then(() => {
@@ -491,7 +501,8 @@ const MainScreen = ({navigation}) => {
       {!addShopForm &&
         !deleteShopForm &&
         !updateShopForm &&
-        !singleShopView && (
+        !singleShopView &&
+        !isAdmin && (
           <View style={{display: 'flex', flex: 1, flexDirection: 'column'}}>
             <View style={{display: 'flex', backgroundColor: '#fff'}}>
               <View
@@ -692,7 +703,7 @@ const MainScreen = ({navigation}) => {
                       clickedCard(shop);
                     }}
                     key={index}>
-                    <ShopCard key={index} shop={shop} />
+                    <ShopCard key={index} shop={shop} differentColor={false} />
                   </TouchableOpacity>
                 ))
               ) : (
@@ -733,6 +744,9 @@ const MainScreen = ({navigation}) => {
           onClickBack={() => setSingleShopView(false)}
           getShops={() => getShops()}
         />
+      )}
+      {isAdmin && (
+        <AdminView onClickLogoutOnAdminScreen={() => setIsAdmin(false)} />
       )}
     </View>
   );

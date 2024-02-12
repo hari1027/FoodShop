@@ -20,16 +20,18 @@ import {launchImageLibrary} from 'react-native-image-picker';
 const UpdateShopForm = props => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const updateShop = async values => {
+  const updateShopForApproval = async values => {
     try {
-      const url = `http://10.0.2.2:5000/FoodShop/${props.shopDetails._id}`;
+      const url = `http://10.0.2.2:5000/FoodshopAdmin/${props.shopDetails._id}`;
       const response = await axios.put(url, values);
       if (response.status === 200) {
-        console.log('Shop Has Been Updated Successfully');
+        console.log(
+          'Shop Has Been Sent To Updated Approval Successfully . Once Approved Message will be sent to shopOwner Number . For any clarification we will contact to the shopOwner Number .',
+        );
         props.getShops();
         props.onClickBackToHome();
         Snackbar.show({
-          text: 'Shop Has Been Updated Successfully',
+          text: 'Shop Has Been Sent To Updated Approval Successfully . Once Approved Message will be sent to shopOwner Number . For any clarification we will contact to the shopOwner Number .',
           duration: Snackbar.LENGTH_LONG,
         });
       }
@@ -43,7 +45,7 @@ const UpdateShopForm = props => {
   };
 
   const handleSubmit = values => {
-    updateShop(values);
+    updateShopForApproval(values);
   };
 
   const toggleModal = () => {

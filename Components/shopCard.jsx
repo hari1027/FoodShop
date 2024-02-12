@@ -3,9 +3,9 @@ import {View, Text, StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
-const ShopCard = ({shop}) => {
+const ShopCard = ({shop, differentColor}) => {
   return (
-    <View style={styles.card}>
+    <View style={differentColor === true ? styles.differentColor : styles.card}>
       <View style={{display: 'flex', flex: 0.8}}>
         <Text style={styles.shopName} numberOfLines={1} ellipsizeMode="tail">
           {shop.shopName.length > 30
@@ -95,6 +95,16 @@ const ShopCard = ({shop}) => {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
+    padding: 8,
+    margin: 8,
+    borderRadius: 8,
+    elevation: 3,
+    display: 'flex',
+    flexDirection: 'row',
+    flex: 1,
+  },
+  differentColor: {
+    backgroundColor: '#FFE5B4',
     padding: 8,
     margin: 8,
     borderRadius: 8,
