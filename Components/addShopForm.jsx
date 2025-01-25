@@ -23,7 +23,7 @@ const AddShopForm = props => {
   const addShopForApproval = async values => {
     try {
       const response = await axios.post(
-        'http://10.0.2.2:5000/FoodshopAdmin',
+        'https://food-shop-server-eegl.vercel.app/FoodshopAdmin',
         values,
       );
       if (response.status === 200) {

@@ -11,13 +11,13 @@ const AdminView = props => {
 
   const getShopsInApprovalList = async () => {
     try {
-      let resp = await axios.get('http://10.0.2.2:5000/FoodshopAdmin');
+      let resp = await axios.get('https://food-shop-server-eegl.vercel.app/FoodshopAdmin');
       if (resp.status === 200) {
         console.log('Approvement Shops List is fetched Successfully');
       }
       if (resp.data) {
         try {
-          let response = await axios.get('http://10.0.2.2:5000/Foodshop');
+          let response = await axios.get('https://food-shop-server-eegl.vercel.app/Foodshop');
           if (response.status === 200) {
             console.log('Shops List is fetched Successfully');
           }

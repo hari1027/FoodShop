@@ -79,7 +79,7 @@ const MainScreen = ({navigation}) => {
 
   const getShopDataById = async item => {
     try {
-      const response = await axios.get(`http://10.0.2.2:5000/FoodShop/${item}`);
+      const response = await axios.get(`https://food-shop-server-eegl.vercel.app/FoodShop/${item}`);
       if (response.status === 200) {
         return response.data;
       }
@@ -97,7 +97,7 @@ const MainScreen = ({navigation}) => {
     if (isBookmarked === false) {
       try {
         const response = await axios.get(
-          `http://10.0.2.2:5000/getBookmarkedShops/${uniqueEmail}`,
+          `https://food-shop-server-eegl.vercel.app/getBookmarkedShops/${uniqueEmail}`,
         );
         if (response.status === 200) {
           console.log('Saved List is fetched Successfully');
@@ -138,7 +138,7 @@ const MainScreen = ({navigation}) => {
           resp.map(async data => {
             try {
               const response = await axios.get(
-                `http://10.0.2.2:5000/getShopRatingAndFeedback/${data._id}`,
+                `https://food-shop-server-eegl.vercel.app/getShopRatingAndFeedback/${data._id}`,
               );
               if (response.status === 200) {
                 console.log(
@@ -339,7 +339,7 @@ const MainScreen = ({navigation}) => {
         resp.map(async data => {
           try {
             const response = await axios.get(
-              `http://10.0.2.2:5000/getShopRatingAndFeedback/${data._id}`,
+              `https://food-shop-server-eegl.vercel.app/getShopRatingAndFeedback/${data._id}`,
             );
             if (response.status === 200) {
               console.log(
@@ -389,7 +389,7 @@ const MainScreen = ({navigation}) => {
 
   const getShops = async () => {
     try {
-      let resp = await axios.get('http://10.0.2.2:5000/FoodShop');
+      let resp = await axios.get('https://food-shop-server-eegl.vercel.app/FoodShop');
       if (resp.status === 200) {
         console.log('Shops List is fetched Successfully');
       }
@@ -398,7 +398,7 @@ const MainScreen = ({navigation}) => {
         resp.data.map(async data => {
           try {
             const response = await axios.get(
-              `http://10.0.2.2:5000/getShopRatingAndFeedback/${data._id}`,
+              `https://food-shop-server-eegl.vercel.app/getShopRatingAndFeedback/${data._id}`,
             );
             if (response.status === 200) {
               console.log(
@@ -450,7 +450,7 @@ const MainScreen = ({navigation}) => {
     resp.map(async data => {
       try {
         const response = await axios.get(
-          `http://10.0.2.2:5000/getShopRatingAndFeedback/${data._id}`,
+          `https://food-shop-server-eegl.vercel.app/getShopRatingAndFeedback/${data._id}`,
         );
         if (response.status === 200) {
           console.log(

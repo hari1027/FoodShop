@@ -14,7 +14,7 @@ import * as yup from 'yup';
 const DeleteShopDialog = props => {
   const deleteShop = async id => {
     try {
-      const url = `http://10.0.2.2:5000/FoodShop/${id}`;
+      const url = `https://food-shop-server-eegl.vercel.app/FoodShop/${id}`;
       const response = await axios.delete(url);
       if (response.status === 200) {
         console.log('Shop Has Been Deleted Successfully');
