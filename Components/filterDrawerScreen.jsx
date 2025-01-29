@@ -30,7 +30,7 @@ const FilterDrawerScreen = () => {
   const FilterShops = async values => {
     try {
       const response = await axios.post(
-        'https://food-shop-server-eegl.vercel.app/FilterFoodshop',
+        'https://foodshop-server-production.up.railway.app/FilterFoodshop',
         values,
       );
       if (response.status === 200) {

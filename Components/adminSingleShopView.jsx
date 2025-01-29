@@ -31,12 +31,12 @@ const AdminSingleShopView = props => {
     delete values.shopAlreadyPresentInMainDb;
     try {
       const response = await axios.post(
-        'https://food-shop-server-eegl.vercel.app/Foodshop',
+        'https://foodshop-server-production.up.railway.app/Foodshop',
         values,
       );
       if (response.status === 200) {
         try {
-          const url = `https://food-shop-server-eegl.vercel.app/FoodshopAdmin/${values._id}`;
+          const url = `https://foodshop-server-production.up.railway.app/FoodshopAdmin/${values._id}`;
           const resp = await axios.delete(url);
           if (resp.status === 200) {
             console.log('Shop Has Been Added Successfully');
@@ -67,11 +67,11 @@ const AdminSingleShopView = props => {
   const updateShopInMainDB = async values => {
     delete values.shopAlreadyPresentInMainDb;
     try {
-      const url = `https://food-shop-server-eegl.vercel.app/Foodshop/${values._id}`;
+      const url = `https://foodshop-server-production.up.railway.app/Foodshop/${values._id}`;
       const response = await axios.put(url, values);
       if (response.status === 200) {
         try {
-          const url = `https://food-shop-server-eegl.vercel.app/FoodshopAdmin/${values._id}`;
+          const url = `https://foodshop-server-production.up.railway.app/FoodshopAdmin/${values._id}`;
           const resp = await axios.delete(url);
           if (resp.status === 200) {
             console.log('Shop Has Been Updated Successfully');
@@ -101,7 +101,7 @@ const AdminSingleShopView = props => {
 
   const RejectShop = async id => {
     try {
-      const url = `https://food-shop-server-eegl.vercel.app/FoodshopAdmin/${id}`;
+      const url = `https://foodshop-server-production.up.railway.app/FoodshopAdmin/${id}`;
       const response = await axios.delete(url);
       if (response.status === 200) {
         console.log('Shop Has Been Rejected Successfully');
