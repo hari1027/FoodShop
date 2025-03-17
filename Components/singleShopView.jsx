@@ -62,7 +62,7 @@ const SingleShopView = props => {
     };
     try {
       const response = await axios.post(
-        'http://10.0.2.2:5000/submitFeedback',
+        'https://foodshop-server-production.up.railway.app/submitFeedback',
         obj,
       );
       if (response.status === 200) {
@@ -249,7 +249,7 @@ const SingleShopView = props => {
     const values = {shopId: props.shopDetails._id, email: uniqueEmailId};
     try {
       const response = await axios.post(
-        'http://10.0.2.2:5000/bookmarkShop',
+        'https://foodshop-server-production.up.railway.app/bookmarkShop',
         values,
       );
       if (response.status === 200) {
@@ -273,7 +273,7 @@ const SingleShopView = props => {
     const values = {shopId: props.shopDetails._id, email: uniqueEmailId};
     try {
       const response = await axios.post(
-        'http://10.0.2.2:5000/removeShopFromBookmark',
+        'https://foodshop-server-production.up.railway.app/removeShopFromBookmark',
         values,
       );
       if (response.status === 200) {
@@ -296,7 +296,7 @@ const SingleShopView = props => {
   const getSavedList = async () => {
     try {
       const response = await axios.get(
-        `http://10.0.2.2:5000/getBookmarkedShops/${uniqueEmailId}`,
+        `https://foodshop-server-production.up.railway.app/getBookmarkedShops/${uniqueEmailId}`,
       );
       if (response.status === 200) {
         console.log('Saved List is fetched Successfully');
@@ -322,7 +322,7 @@ const SingleShopView = props => {
   const getCommentsList = async () => {
     try {
       const response = await axios.get(
-        `http://10.0.2.2:5000/getCommentsList/${props.shopDetails._id}`,
+        `https://foodshop-server-production.up.railway.app/getCommentsList/${props.shopDetails._id}`,
       );
       if (response.status === 200) {
         console.log('Comments List is fetched Successfully');

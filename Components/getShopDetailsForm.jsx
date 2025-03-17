@@ -18,7 +18,7 @@ const GetShopDetailsForm = props => {
 
   const getShopDetails = async id => {
     try {
-      const url = `http://10.0.2.2:5000/FoodShop/${id}`;
+      const url = `https://foodshop-server-production.up.railway.app/FoodShop/${id}`;
       const response = await axios.get(url);
       if (response.status === 200) {
         setShopDetails(response.data);

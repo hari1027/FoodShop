@@ -31,7 +31,7 @@ const Signup = ({ navigation }: SignupScreenProps) => {
         } else {
             try {
                 const data = { email }
-                const response = await axios.post("http://10.0.2.2:5000/send-email", data)
+                const response = await axios.post("https://foodshop-server-production.up.railway.app/send-email", data)
                 if (response.data) {
                     console.log("yes")
                     Snackbar.show({

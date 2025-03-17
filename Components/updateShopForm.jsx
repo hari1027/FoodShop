@@ -22,7 +22,7 @@ const UpdateShopForm = props => {
 
   const updateShopForApproval = async values => {
     try {
-      const url = `http://10.0.2.2:5000/FoodshopAdmin/${props.shopDetails._id}`;
+      const url = `https://foodshop-server-production.up.railway.app/FoodshopAdmin/${props.shopDetails._id}`;
       const response = await axios.put(url, values);
       if (response.status === 200) {
         console.log(
